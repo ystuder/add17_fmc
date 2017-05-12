@@ -1,0 +1,15 @@
+*.wdf
+*.rst
+*.log
+*.bat
+*.rpt
+*.dcp
+*.tcl
+*.vds
+*.js
+*.sh
+*.os
+*.pb
+/vivado/mcu.cache
+*.jou
+*.str
