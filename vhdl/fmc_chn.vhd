@@ -34,6 +34,8 @@ use work.mcu_pkg.all;
 --use UNISIM.VComponents.all;
 
 entity fmc_chn is
+  generic(N : natural := 0 -- channel number
+          ); 
   Port ( rst     : in std_logic;
          clk     : in std_logic;
          tick_dur : in std_logic -- nominal period = 1 ms
@@ -50,6 +52,7 @@ architecture Behavioral of fmc_chn is
   signal tone_duration  : unsigned(c_fmc_dur_ww-1 downto 0);
   signal rom_addr      : std_logic_vector(c_fmc_rom_aw-1 downto 0);
   signal rom_data      : std_logic_vector(c_fmc_rom_dw-1 downto 0);
+  signal tone_number   : unsigned(c_fmc_tone_ww-1 downto 0);
 
 begin
 
@@ -75,5 +78,17 @@ begin
     end if;
   end process;
 
+
+  -----------------------------------------------------------------------------
+  -- channel number dependent FMC ROM instance
+  -----------------------------------------------------------------------------  
+  rom : entity work.fmc_rom
+    generic map(N => N)
+    port map (clk  => clk,
+              addr => rom_addr,
+              data => rom_data
+              );
+  tone_duration <= unsigned(rom_data(c_fmc_dur_ww+c_fmc_tone_ww-1 downto c_fmc_tone_ww));
+  tone_number   <= unsigned(rom_data(c_fmc_tone_ww-1 downto 0));
 
 end Behavioral;
