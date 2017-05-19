@@ -34,9 +34,9 @@ architecture rtl of fmc_top is
     signal tick_nco : std_logic; -- nominal period = 1 us
     signal chn_enb  : std_logic;
     -- outputs to pins
-    signal fmc_enb  : std_logic;
-    signal fmc_dir  : std_logic;
-    signal fmc_stp  : std_logic;
+    signal fmc_enb  : std_logic_vector(7 downto 0);
+    signal fmc_dir  : std_logic_vector(7 downto 0);
+    signal fmc_stp  : std_logic_vector(7 downto 0);
     
     signal ctr_dur : unsigned(16 downto 0); -- 0-131071
     signal ctr_nco : unsigned(6 downto 0); -- 0-127
@@ -57,9 +57,9 @@ begin
               tick_nco   => tick_nco,
               chn_enb   => chn_enb,
               -- outputs to pins
-              fmc_enb   => fmc_enb,
-              fmc_dir   => fmc_dir,
-              fmc_stp   => fmc_stp
+              fmc_enb   => fmc_enb(N),
+              fmc_dir   => fmc_dir(N),
+              fmc_stp   => fmc_stp(N)
             );
     end generate;
     
