@@ -46,7 +46,7 @@ architecture rtl of fmc_top is
     
 begin
 
-    tree: for N in 1 to c_fmc_num_chn generate
+    tree: for N in 0 to c_fmc_num_chn -1 generate
         chn : entity work.fmc_chn
         generic map(N => N)
         port map(
