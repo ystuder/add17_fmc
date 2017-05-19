@@ -38,7 +38,14 @@ entity fmc_chn is
           ); 
   Port ( rst     : in std_logic;
          clk     : in std_logic;
-         tick_dur : in std_logic -- nominal period = 1 ms
+         
+         tick_dur : in std_logic; -- nominal period = 1 ms
+         tick_nco : in std_logic; -- nominal period = 1 us
+         chn_enb  : in std_logic;
+         -- outputs to pins
+         fmc_enb  : out std_logic;
+         fmc_dir  : out std_logic;
+         fmc_stp  : out std_logic
        );
 end fmc_chn;
 
@@ -53,6 +60,8 @@ architecture Behavioral of fmc_chn is
   signal rom_addr      : std_logic_vector(c_fmc_rom_aw-1 downto 0);
   signal rom_data      : std_logic_vector(c_fmc_rom_dw-1 downto 0);
   signal tone_number   : unsigned(c_fmc_tone_ww-1 downto 0);
+  signal stp_reg   : std_logic;
+  signal dir_reg   : std_logic;
 
 begin
 
@@ -77,11 +86,23 @@ begin
       end if;
     end if;
   end process;
+  
+  P_freq: process(rst, clk)
+begin
+      if rst = '1' then
+      fmc_enb <= '1';
+      stp_reg <= '0';
+      dir_reg <= '0';
+      elsif rising_edge(clk) then
+      end if;
+end process;
 
 
   -----------------------------------------------------------------------------
   -- channel number dependent FMC ROM instance
-  -----------------------------------------------------------------------------  
+  -----------------------------------------------------------------------------   
+   fmc_stp <= stp_reg;
+   fmc_dir <= dir_reg;
   rom : entity work.fmc_rom
     generic map(N => N)
     port map (clk  => clk,
