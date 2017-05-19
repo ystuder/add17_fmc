@@ -30,6 +30,31 @@ end fmc_top;
 
 architecture rtl of fmc_top is
 
+    signal tick_dur : std_logic; -- nominal period = 1 ms
+    signal tick_nco : std_logic; -- nominal period = 1 us
+    signal chn_enb  : std_logic;
+    -- outputs to pins
+    signal fmc_enb  : std_logic;
+    signal fmc_dir  : std_logic;
+    signal fmc_stp  : std_logic;
+
 begin
+
+    tree: for N in 1 to c_fmc_num_chn generate
+        chn : entity work.fmc_chn
+        generic map(N => N)
+        port map(
+              rst      => rst,
+              clk      => clk,
+              
+              tick_dur   => tick_dur,
+              tick_nco   => tick_nco,
+              chn_enb   => chn_enb,
+              -- outputs to pins
+              fmc_enb   => fmc_enb,
+              fmc_dir   => fmc_dir,
+              fmc_stp   => fmc_stp
+            );
+    end generate;
 
 end rtl;
