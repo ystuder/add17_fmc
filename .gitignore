@@ -13,3 +13,6 @@
 /vivado/mcu.cache
 *.jou
 *.str
+vivado/mcu.sim/
+vivado/mcu.ip_user_files/
+vivado/mcu.runs/
