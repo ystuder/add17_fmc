@@ -87,11 +87,15 @@ begin
       -- default assignment
       -- maintain tone duration counter
       if tick_dur = '1' then
-        if duration_cnt = tone_duration-1 then
-          duration_cnt <= (others => '0');
-          rom_addr <= std_logic_vector(unsigned(rom_addr)+1);
+        if tone_duration < 2**c_fmc_dur_ww-1 then
+          if duration_cnt = tone_duration-1 then
+            duration_cnt <= (others => '0');
+            rom_addr <= std_logic_vector(unsigned(rom_addr)+1);
+          else
+            duration_cnt <= duration_cnt + 1;
+          end if;
         else
-          duration_cnt <= duration_cnt + 1;
+          rom_addr <= (others => '0');
         end if;
       end if;
     end if;
