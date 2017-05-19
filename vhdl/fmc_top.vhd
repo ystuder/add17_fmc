@@ -37,7 +37,13 @@ architecture rtl of fmc_top is
     signal fmc_enb  : std_logic;
     signal fmc_dir  : std_logic;
     signal fmc_stp  : std_logic;
-
+    
+    signal ctr_dur : unsigned(16 downto 0); -- 0-131071
+    signal ctr_nco : unsigned(6 downto 0); -- 0-127
+    
+    constant ctr_dur_max : unsigned(16 downto 0) := to_unsigned(125000-1, 17);
+    constant ctr_nco_max : unsigned(6 downto 0) := to_unsigned(125-1, 7);
+    
 begin
 
     tree: for N in 1 to c_fmc_num_chn generate
@@ -56,5 +62,34 @@ begin
               fmc_stp   => fmc_stp
             );
     end generate;
+    
+    ctr: process(rst, clk)
+    begin
+        if rst = '1' then
+            ctr_dur <= (others => '0');
+            ctr_nco <= (others => '0');
+            tick_nco <= '0';
+            tick_dur <= '0';
+        elsif rising_edge(clk) then
+            
+            -- NCO counter
+            if ctr_nco < ctr_nco_max then
+                ctr_nco <= ctr_nco + 1;
+                tick_nco <= '0';
+            else
+                ctr_nco <= (others => '0');
+                tick_nco <= '1';
+            end if;
+            
+            -- duration counter
+            if ctr_dur < ctr_dur_max then
+                ctr_dur <= ctr_dur + 1;
+                tick_dur <= '0';
+            else
+                ctr_dur <= (others => '0');
+                tick_dur <= '1';
+            end if;
+        end if;
+    end process;
 
 end rtl;
