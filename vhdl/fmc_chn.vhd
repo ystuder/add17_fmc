@@ -55,18 +55,28 @@ end fmc_chn;
 
 architecture Behavioral of fmc_chn is
 
-  signal duration_cnt  : unsigned(c_fmc_dur_ww-1 downto 0);
+  signal duration_cnt   : unsigned(c_fmc_dur_ww-1 downto 0);
   signal tone_duration  : unsigned(c_fmc_dur_ww-1 downto 0);
-  signal rom_addr      : std_logic_vector(c_fmc_rom_aw-1 downto 0);
-  signal rom_data      : std_logic_vector(c_fmc_rom_dw-1 downto 0);
-  signal tone_number   : unsigned(c_fmc_tone_ww-1 downto 0);
-  signal stp_reg   : std_logic;
-  signal dir_reg   : std_logic;
+  signal rom_addr       : std_logic_vector(c_fmc_rom_aw-1 downto 0);
+  signal rom_data       : std_logic_vector(c_fmc_rom_dw-1 downto 0);
+  signal tone_number    : unsigned(c_fmc_tone_ww-1 downto 0);
+  signal stp_cnt        : unsigned(6 downto 0);
+  signal stp_reg        : std_logic;
+  signal dir_reg        : std_logic;
+  type t_nco_lut is array (2**c_fmc_tone_ww-1 downto 0) of natural;
+  constant nco_lut : t_nco_lut := (
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,7382,6968,6577,6207,5859,5530,5220,4927,4650,4389,4143,3910,3691,
+    3484,3288,3104,2930,2765,2610,2463,2325,2195,2071,1955,1845,1742,1644,1552,1465,1383,1305,1232,
+    1163,1097,1036,978,923,871,822,776,732,691,652,616,581,549,518,489,461,0);
+  -- NCO signals
+  signal seed    : unsigned(12 downto 0); -- 13 bit seed
+  signal nco_reg : unsigned(23 downto 0); -- 24 bit NCO
 
 begin
 
+
   -----------------------------------------------------------------------------
-  -- ROM addressing and tick counting
+  -- Controll logic at the "time domain"
   -----------------------------------------------------------------------------  
   P_read: process(rst, clk)
   begin
@@ -86,23 +96,61 @@ begin
       end if;
     end if;
   end process;
-  
+
+
+  -----------------------------------------------------------------------------
+  -- Generate FMC signal 
+  -----------------------------------------------------------------------------
+  fmc_stp <= stp_reg;
+  fmc_dir <= dir_reg;
   P_freq: process(rst, clk)
-begin
-      if rst = '1' then
-      fmc_enb <= '1';
-      stp_reg <= '0';
-      dir_reg <= '0';
-      elsif rising_edge(clk) then
+  begin
+    if rst = '1' then
+    fmc_enb <= '1';
+    stp_reg <= '0';
+    dir_reg <= '0';
+    stp_cnt <= (others => '0');
+    nco_reg <= (others => '0');
+    elsif rising_edge(clk) then      
+      if tone_number > 0 then
+        -- enable is low-active
+        fmc_enb <= '0';
+      else
+        fmc_enb <= '1';
       end if;
-end process;
+      if tick_nco = '1' then
+        nco_reg <= nco_reg + seed;
+      end if;
+      stp_reg <= std_logic(nco_reg(nco_reg'left)); -- connect MSB of nco_reg to stp_reg
+      if stp_reg = '0' and std_logic(nco_reg(nco_reg'left)) = '1' then
+        -- rising edge on step output
+        if stp_cnt = c_fmc_max_step-1 then 
+          stp_cnt <= (others => '0');
+          dir_reg <= not dir_reg;
+        else
+          stp_cnt <= stp_cnt + 1;
+        end if;
+      end if;
+    end if;
+  end process;
+
+    
+  -----------------------------------------------------------------------------
+  -- convert ROM tone number to seed
+  -----------------------------------------------------------------------------  
+  nco_generating: process(rst, clk)
+  begin
+    if rst = '1' then
+      seed    <= (others => '0');
+    elsif rising_edge(clk) then
+      seed    <= to_unsigned(nco_lut(to_integer(tone_number)),13);
+    end if;
+  end process;
 
 
   -----------------------------------------------------------------------------
   -- channel number dependent FMC ROM instance
   -----------------------------------------------------------------------------   
-   fmc_stp <= stp_reg;
-   fmc_dir <= dir_reg;
   rom : entity work.fmc_rom
     generic map(N => N)
     port map (clk  => clk,
