@@ -81,11 +81,14 @@ architecture struct of lab_2_top is
   signal usr_addr : STD_LOGIC_VECTOR ( 15 downto 0 );
   signal usr_rdata : STD_LOGIC_VECTOR ( 31 downto 0 );
   signal usr_rden : STD_LOGIC;
+  signal usr_rden_d : STD_LOGIC;
   signal usr_wdata : STD_LOGIC_VECTOR ( 31 downto 0 );
   signal usr_wren : STD_LOGIC;
   -- GPIO signals
   signal bus2gpio   : t_bus2rws;
   signal gpio2bus   : t_rws2bus;
+  signal bus2fmc    : t_bus2rws;
+  signal fmc2bus    : t_rws2bus;
   signal gpio_0_in  : std_logic_vector(c_gpio_port_ww-1 downto 0);
   signal gpio_0_out : std_logic_vector(c_gpio_port_ww-1 downto 0);
   signal gpio_0_enb : std_logic_vector(c_gpio_port_ww-1 downto 0);
@@ -125,7 +128,7 @@ begin
       frst0 => frst0,
       usr_addr(15 downto 0) => usr_addr(15 downto 0),
       usr_rdata(31 downto 0) => usr_rdata(31 downto 0),
-      usr_rden => usr_rden,
+      usr_rden => usr_rden_d,
       usr_wdata(31 downto 0) => usr_wdata(31 downto 0),
       usr_wren => usr_wren
       );
@@ -154,22 +157,38 @@ begin
       port map(
       rst        => frst0_n,
       clk        => fclk0,
-      bus_in     => bus2gpio,
-      bus_out    => gpio2bus,
+      bus_in     => bus2fmc,
+      bus_out    => fmc2bus,
       fmc_enable  => open,
       fmc_direct => open,
       fmc_step   => open
              
       );
-
+      
   -- user bus connections --------------------------------------------------------
   bus2gpio.addr   <= usr_addr(AWPER-1+2 downto 2);
   bus2gpio.data   <= usr_wdata(DW-1 downto 0);
-  bus2gpio.rd_enb <=  usr_rden;
-  bus2gpio.wr_enb <=  usr_wren;
+  bus2gpio.rd_enb <= usr_rden_d and not usr_addr(AWPER+2);
+  bus2gpio.wr_enb <= usr_wren and not usr_addr(AWPER+2);
   usr_rdata(DW-1 downto 0) <= gpio2bus.data;
   usr_rdata(31 downto DW)  <= (others => '0');
   
+  bus2fmc.addr   <= usr_addr(AWPER-1+2 downto 2);
+  bus2fmc.data   <= usr_wdata(DW-1 downto 0);
+  bus2fmc.rd_enb <= usr_rden_d and usr_addr(AWPER+2);
+  bus2fmc.wr_enb <= usr_wren and usr_addr(AWPER+2);
+  usr_rdata(DW-1 downto 0) <= fmc2bus.data;
+  usr_rdata(31 downto DW)  <= (others => '0');
+  
+  rd_delay: process(frst0, fclk0)
+      begin
+          if frst0 = '1' then
+            usr_rden_d <= '0';
+          elsif rising_edge(fclk0) then
+            usr_rden_d <= usr_rden;
+          end if;
+      end process;
+          
   -- Tri-state buffers for GPIO pins ---------------------------------------------
   gpio_0_in <= gpio_0;
   gpio_1_in <= gpio_1;
