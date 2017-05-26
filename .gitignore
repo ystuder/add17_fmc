@@ -10,9 +10,14 @@
 *.sh
 *.os
 *.pb
-/vivado/mcu.cache
 *.jou
 *.str
+/vivado/mcu.cache
 vivado/mcu.sim/
 vivado/mcu.ip_user_files/
 vivado/mcu.runs/
+SystemOnChip/lab_2/lab_2.cache/
+SystemOnChip/lab_2/lab_2.runs/
+SystemOnChip/lab_2/lab_2.ip_user_files/
+SystemOnChip/lab_2/lab_2.srcs/
+SystemOnChip/lab_2/.Xil/
