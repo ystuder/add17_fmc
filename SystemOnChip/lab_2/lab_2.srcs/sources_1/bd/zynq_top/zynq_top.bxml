@@ -2,9 +2,9 @@
 <Root MajorVersion="0" MinorVersion="33">
   <CompositeFile CompositeFileTopName="zynq_top" CanBeSetAsTop="false" CanDisplayChildGraph="true">
     <Description>Composite Fileset</Description>
-    <Generation Name="SYNTHESIS" State="RESET" Timestamp="1490985450"/>
-    <Generation Name="IMPLEMENTATION" State="RESET" Timestamp="1490985450"/>
-    <Generation Name="SIMULATION" State="RESET" Timestamp="1490985450"/>
+    <Generation Name="SYNTHESIS" State="RESET" Timestamp="1495816067"/>
+    <Generation Name="IMPLEMENTATION" State="RESET" Timestamp="1495816067"/>
+    <Generation Name="SIMULATION" State="RESET" Timestamp="1495816067"/>
     <FileCollection Name="SOURCES" Type="SOURCES">
       <File Name="ip\zynq_top_processing_system7_0_0\zynq_top_processing_system7_0_0.xci" Type="IP">
         <Instance HierarchyPath="processing_system7_0"/>

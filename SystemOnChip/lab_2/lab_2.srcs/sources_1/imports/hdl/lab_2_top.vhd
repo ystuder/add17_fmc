@@ -145,6 +145,22 @@ begin
       gpio_1_enb => gpio_1_enb
       );
   frst0_n <= not frst0;
+  
+  
+  
+    -- FMC ---------------------------------------------------------------------
+  i_fmc: entity work.fmc_top
+      generic map(CF => CF)
+      port map(
+      rst        => frst0_n,
+      clk        => fclk0,
+      bus_in     => bus2gpio,
+      bus_out    => gpio2bus,
+      fmc_enable  => open,
+      fmc_direct => open,
+      fmc_step   => open
+             
+      );
 
   -- user bus connections --------------------------------------------------------
   bus2gpio.addr   <= usr_addr(AWPER-1+2 downto 2);
