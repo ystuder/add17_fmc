@@ -38,11 +38,11 @@ architecture rtl of fmc_top is
     signal fmc_dir  : std_logic_vector(7 downto 0);
     signal fmc_stp  : std_logic_vector(7 downto 0);
     
-    signal ctr_dur : unsigned(16 downto 0); -- 0-131071
-    signal ctr_nco : unsigned(6 downto 0); -- 0-127
+    signal ctr_dur : unsigned(16 downto 0);--16 downto 0); -- 0-131071
+    signal ctr_nco : unsigned(6 downto 0);--6 downto 0); -- 0-127
     
-    constant ctr_dur_max : unsigned(16 downto 0) := to_unsigned(125000-1, 17);
-    constant ctr_nco_max : unsigned(6 downto 0) := to_unsigned(125-1, 7);
+    constant dur_frequency : unsigned(16 downto 0) := to_unsigned(CF/1_000 -1, 17);--125000-1, 17);
+    constant nco_frequency : unsigned(6 downto 0) := to_unsigned(CF/1_000_000 -1, 7);--125-1, 7);
     
 begin
 
@@ -73,7 +73,7 @@ begin
         elsif rising_edge(clk) then
             
             -- NCO counter
-            if ctr_nco < ctr_nco_max then
+            if ctr_nco < (nco_frequency) then
                 ctr_nco <= ctr_nco + 1;
                 tick_nco <= '0';
             else
@@ -82,7 +82,7 @@ begin
             end if;
             
             -- duration counter
-            if ctr_dur < ctr_dur_max then
+            if ctr_dur < (dur_frequency) then
                 ctr_dur <= ctr_dur + 1;
                 tick_dur <= '0';
             else
